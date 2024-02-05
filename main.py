@@ -1,5 +1,5 @@
 from openpyxl import *
-
+from datetime import datetime
 # Check to see if the excel file exists (program was already run)
 try:
     wb = load_workbook(filename= 'tool_checkout_system.xlsx')
@@ -13,7 +13,7 @@ except:
     toolCheckoutLogSheet['A1'] = "Employee"
     toolCheckoutLogSheet['B1'] = 'Tool'
     toolCheckoutLogSheet['C1'] = 'Sign Out Time'
-    toolCheckoutLogSheet['D1'] = 'Sing In Time'
+    toolCheckoutLogSheet['D1'] = 'Sign In Time'
 
     employeesSheet['A1'] = 'Employee Number'
     employeesSheet['B1'] = 'Employee Name'
@@ -43,7 +43,18 @@ def initializeHashMap(data,map):
         map[number] = name
     
 def signOutTool(employeeNumber,toolNumber):
-    print("signout")
+    if toolNumber in activeTools:
+        print("\n*** ERROR: This tool is already signed out. ***\n")
+    else:
+        toolName = tools.get(toolNumber);
+        employeeName = employees.get(employeeNumber)
+        now = datetime.now()
+        currentTime = now.strftime("%m/%d/%Y %H:%M")
+        dataToAppend = [employeeName,toolName,currentTime]
+        tool_checkout_log_sheet.append(dataToAppend)
+        activeTools.append(toolNumber)
+        wb.save('tool_checkout_system.xlsx')
+
 
 def signInTool(employeeNumber,toolNumber):
     print("sign in")
@@ -59,18 +70,20 @@ tools = {}
 employees = {}
 
 # Iterate over the sheets and extract data
-toolsSheet = wb['tools']
-employeeSheet = wb['employees']
-toolsData = getSheetData(toolsSheet)
-employeeData = getSheetData(employeeSheet)
+tool_sheet = wb['tools']
+employee_sheet = wb['employees']
+tool_checkout_log_sheet = wb['tool_checkout_log']
+toolsData = getSheetData(tool_sheet)
+employeesData = getSheetData(employee_sheet)
 
 # Initialize the hashmaps
 initializeHashMap(toolsData,tools)
-initializeHashMap(employeeData,employees)
+initializeHashMap(employeesData,employees)
 
-print(tools)
-print(employees)
-
+# Array to store active tools
+activeTools = []
+# print(tools)
+# print(employees)
 while True:
     print("\nWelcome to the tool checkout system")
     print("------------------------------------")
