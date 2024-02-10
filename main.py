@@ -44,6 +44,8 @@ def initializeHashMap(data,map):
         name = array[1]
         map[number] = name
     
+# Input: employeenumber and toolnumber
+# Output: updates sheets and activetool list
 def signOutTool(employeeNumber,toolNumber):
     if toolNumber in activeTools:
         print("\n*** ERROR: This tool is already signed out. ***\n")
@@ -59,7 +61,9 @@ def signOutTool(employeeNumber,toolNumber):
         print(f"\n{toolName} SIGNED OUT BY {employeeName} AT {currentTime}\n")
         wb.save('tool_checkout_system.xlsx')
 
-
+# Input: employeenumber and toolnumber
+# Output: updates sheets and activetool list
+        
 def signInTool(employeeNumber,toolNumber):
     # iterate through the tools column
     #   if we find the tool name, 
@@ -92,6 +96,8 @@ def signInTool(employeeNumber,toolNumber):
                 # activeTools.remove(toolNumber)
                 wb.save('tool_checkout_system.xlsx')
 
+# Input: none
+# Output: creates active tools list
 def getToolStatuses():
     # reset active tools every time we check
     activeTools.clear()
@@ -104,7 +110,8 @@ def getToolStatuses():
                 activeTools.append(tool_sheet[toAppend].value)
 
 
-
+# Input: toolnumber
+# Output: updates tools sheet to list active tools
 def setToolAsActive(toolNumber):
     currentRow = 1 
     for row in tool_sheet.iter_rows(min_row=2, min_col=1, max_row=tool_sheet.max_row, max_col=tool_sheet.max_column): 
@@ -115,6 +122,8 @@ def setToolAsActive(toolNumber):
                 tool_sheet[statusRowToUpdate] = 'Active'
                 wb.save('tool_checkout_system.xlsx')
 
+# Input: toolnumber
+# Output: updates tools sheet to remove active tools
 def removeToolAsActive(toolNumber):
     currentRow = 1 
     for row in tool_sheet.iter_rows(min_row=2, min_col=1, max_row=tool_sheet.max_row, max_col=tool_sheet.max_column): 
@@ -124,14 +133,6 @@ def removeToolAsActive(toolNumber):
                 statusRowToUpdate = 'C' + str(currentRow)
                 tool_sheet[statusRowToUpdate] = None
                 wb.save('tool_checkout_system.xlsx')
-
-
-
-
-
-        
-                
-    
 
 # Dictionaries to store and retrieve data
     
@@ -177,6 +178,16 @@ while True:
             
     employeeNumber = int(input("Scan your employee badge: "))
     toolNumber = int(input("Scan the tool barcode: "))
+
+    # make sure the inputs are valid
+    if employeeNumber not in employees.keys():
+        print("\n*** ERROR: Invalid employee number. ***\n")
+        continue
+    elif toolNumber not in tools.keys():
+        print("\n*** ERROR: Invalid tool number. ***\n")
+        continue
+
+
     
     match action:
         case "1":
