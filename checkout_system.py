@@ -172,7 +172,8 @@ while True:
         else:
             isValidInput = True
             if action == 'q':
-                
+                wb.save('tool_checkout_system.xlsx')
+                wb.close()
                 quit()
     # Get employee barcode number
             
