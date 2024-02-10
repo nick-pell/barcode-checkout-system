@@ -47,6 +47,7 @@ def initializeHashMap(data,map):
 def signOutTool(employeeNumber,toolNumber):
     if toolNumber in activeTools:
         print("\n*** ERROR: This tool is already signed out. ***\n")
+        return
     else:
         toolName = tools.get(toolNumber);
         employeeName = employees.get(employeeNumber)
@@ -54,7 +55,7 @@ def signOutTool(employeeNumber,toolNumber):
         currentTime = now.strftime("%m/%d/%Y %H:%M")
         dataToAppend = [employeeName,toolName,currentTime]
         tool_checkout_log_sheet.append(dataToAppend)
-        activeTools.append(toolNumber)
+        setToolAsActive(toolNumber)
         print(f"\n{toolName} SIGNED OUT BY {employeeName} AT {currentTime}\n")
         wb.save('tool_checkout_system.xlsx')
 
@@ -64,6 +65,12 @@ def signInTool(employeeNumber,toolNumber):
     #   if we find the tool name, 
     #       update sign in column and remove tool from active tools
     # keep track of the row we're on
+
+    if toolNumber not in activeTools:
+        print("\n*** ERROR: This tool is not signed out. ***\n")
+        return
+
+
 
     currentRow = 1 
     for row in tool_checkout_log_sheet.iter_rows(min_row=2, min_col=1, max_row=tool_checkout_log_sheet.max_row, max_col=tool_checkout_log_sheet.max_column): 
@@ -81,8 +88,47 @@ def signInTool(employeeNumber,toolNumber):
                 tool_checkout_log_sheet[cellToUpdateSignInEmployee] = employees.get(employeeNumber)
 
                 print(f"\n{tools.get(toolNumber)} SIGNED IN BY {employees.get(employeeNumber)} AT {currentTime}\n")
+                removeToolAsActive(toolNumber)
                 # activeTools.remove(toolNumber)
                 wb.save('tool_checkout_system.xlsx')
+
+def getToolStatuses():
+    # reset active tools every time we check
+    activeTools.clear()
+    currentRow = 1
+    for col in tool_sheet.iter_cols(min_row=2,min_col=3,max_col=3,max_row=tool_sheet.max_row):
+        for cell in col:
+            currentRow += 1
+            if cell.value == 'Active':
+                toAppend = 'A' + str(currentRow)
+                activeTools.append(tool_sheet[toAppend].value)
+
+
+
+def setToolAsActive(toolNumber):
+    currentRow = 1 
+    for row in tool_sheet.iter_rows(min_row=2, min_col=1, max_row=tool_sheet.max_row, max_col=tool_sheet.max_column): 
+        currentRow += 1
+        for cell in row: 
+            if cell.value == toolNumber:
+                statusRowToUpdate = 'C' + str(currentRow)
+                tool_sheet[statusRowToUpdate] = 'Active'
+                wb.save('tool_checkout_system.xlsx')
+
+def removeToolAsActive(toolNumber):
+    currentRow = 1 
+    for row in tool_sheet.iter_rows(min_row=2, min_col=1, max_row=tool_sheet.max_row, max_col=tool_sheet.max_column): 
+        currentRow += 1
+        for cell in row: 
+            if cell.value == toolNumber:
+                statusRowToUpdate = 'C' + str(currentRow)
+                tool_sheet[statusRowToUpdate] = None
+                wb.save('tool_checkout_system.xlsx')
+
+
+
+
+
         
                 
     
@@ -113,6 +159,7 @@ activeTools = []
 # print(tools)
 # print(employees)
 while True:
+    getToolStatuses()
     print("\nWelcome to the tool checkout system")
     print("------------------------------------")
     # Collect and Validate input
