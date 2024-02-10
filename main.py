@@ -5,21 +5,23 @@ try:
     wb = load_workbook(filename= 'tool_checkout_system.xlsx')
 except:
     # Create the workbook if it doesnt exist
-    print("except")
     wb = Workbook()
     toolCheckoutLogSheet = wb.create_sheet("tool_checkout_log")
     employeesSheet = wb.create_sheet("employees")
     toolsSheet = wb.create_sheet("tools")
-    toolCheckoutLogSheet['A1'] = "Employee"
+    toolCheckoutLogSheet['A1'] = "Sign Out Employee"
     toolCheckoutLogSheet['B1'] = 'Tool'
     toolCheckoutLogSheet['C1'] = 'Sign Out Time'
     toolCheckoutLogSheet['D1'] = 'Sign In Time'
+    toolCheckoutLogSheet['E1'] = 'Sign In Employee'
+
 
     employeesSheet['A1'] = 'Employee Number'
     employeesSheet['B1'] = 'Employee Name'
 
     toolsSheet['A1'] = 'Tool Number'
     toolsSheet['B1'] = 'Tool Name'
+    toolsSheet['C1'] = 'Status'
     wb.save('tool_checkout_system.xlsx')
 
 # Input: a sheet
@@ -53,11 +55,37 @@ def signOutTool(employeeNumber,toolNumber):
         dataToAppend = [employeeName,toolName,currentTime]
         tool_checkout_log_sheet.append(dataToAppend)
         activeTools.append(toolNumber)
+        print(f"\n{toolName} SIGNED OUT BY {employeeName} AT {currentTime}\n")
         wb.save('tool_checkout_system.xlsx')
 
 
 def signInTool(employeeNumber,toolNumber):
-    print("sign in")
+    # iterate through the tools column
+    #   if we find the tool name, 
+    #       update sign in column and remove tool from active tools
+    # keep track of the row we're on
+
+    currentRow = 1 
+    for row in tool_checkout_log_sheet.iter_rows(min_row=2, min_col=1, max_row=tool_checkout_log_sheet.max_row, max_col=tool_checkout_log_sheet.max_column): 
+        currentRow += 1
+        for cell in row: 
+            signInRowToCheck = 'D' + str(currentRow)
+            # checking the rows for the tool name and making sure its not a tool that was previously signed out by checking the signed out column
+            if cell.value == tools.get(toolNumber) and tool_checkout_log_sheet[signInRowToCheck].value is None:
+                now = datetime.now()
+                currentTime = now.strftime("%m/%d/%Y %H:%M")
+                tool_checkout_log_sheet[signInRowToCheck] = currentTime
+                tool_checkout_log_sheet[signInRowToCheck] = currentTime
+
+                cellToUpdateSignInEmployee = 'E' + str(currentRow)
+                tool_checkout_log_sheet[cellToUpdateSignInEmployee] = employees.get(employeeNumber)
+
+                print(f"\n{tools.get(toolNumber)} SIGNED IN BY {employees.get(employeeNumber)} AT {currentTime}\n")
+                # activeTools.remove(toolNumber)
+                wb.save('tool_checkout_system.xlsx')
+        
+                
+    
 
 # Dictionaries to store and retrieve data
     
@@ -96,6 +124,7 @@ while True:
         else:
             isValidInput = True
             if action == 'q':
+                
                 quit()
     # Get employee barcode number
             
